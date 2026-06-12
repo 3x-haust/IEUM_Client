@@ -45,12 +45,22 @@ function ServiceIntroSection({
   const thumbnail = toOptimizedImagePath(project.thumbnailUrl ?? project.thumbnailPath);
 
   const handleInterestToggle = () => {
-    if (interested || saving) return;
+    if (saving) return;
+    if (interested) {
+      saveProjectInterest(project.id, false);
+      setInterestState({ projectId: project.id, interested: false, saving: false });
+      return;
+    }
     saveProjectInterest(project.id, true);
     setInterestState({ projectId: project.id, interested: true, saving: true });
-    void markProjectInterest(project.id).finally(() => {
-      setInterestState({ projectId: project.id, interested: true, saving: false });
-    });
+    void markProjectInterest(project.id)
+      .then(() => {
+        setInterestState({ projectId: project.id, interested: true, saving: false });
+      })
+      .catch(() => {
+        saveProjectInterest(project.id, false);
+        setInterestState({ projectId: project.id, interested: false, saving: false });
+      });
   };
 
   return (
@@ -66,7 +76,7 @@ function ServiceIntroSection({
           </S.TitleText>
           <S.LikeButton
             type="button"
-            aria-label={interested ? '관심 표시 완료' : '관심 프로젝트'}
+            aria-label={interested ? '관심 취소' : '관심 프로젝트'}
             aria-pressed={interested}
             $active={interested}
             disabled={saving}

@@ -158,9 +158,9 @@ function BusinessCardScanSection({ onScanned }: BusinessCardScanSectionProps) {
 
   return (
     <S.Wrapper>
+      <S.Video ref={videoRef} playsInline muted autoPlay />
       <S.Content>
         <S.CameraArea>
-          <S.Video ref={videoRef} playsInline muted autoPlay />
           {isPreparingNextSide ? (
             <S.StepNotice role="status" aria-live="polite">
               <S.StepNoticeTitle>앞면 촬영 완료</S.StepNoticeTitle>

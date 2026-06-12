@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 
 export const Wrapper = styled.section`
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -8,37 +9,45 @@ export const Wrapper = styled.section`
   justify-content: flex-start;
   gap: 29px;
   padding: min(23.4dvh, 199px) ${({ theme }) => theme.layout.pagePadding} 36px;
-  background-color: ${({ theme }) => theme.colors.bgPlaceholder};
+  overflow: hidden;
+  background-color: ${({ theme }) => theme.colors.black};
   min-height: 0;
   user-select: none;
   touch-action: manipulation;
 `;
 
-export const CameraArea = styled.div`
-  position: relative;
-  width: min(277px, 78vw);
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-radius: ${({ theme }) => theme.radius.lg};
-  background-color: ${({ theme }) => theme.colors.white};
-`;
-
 export const Video = styled.video`
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
 `;
 
+export const CameraGuide = styled.div`
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 29px;
+`;
+
 export const Frame = styled.div`
-  position: absolute;
-  inset: 0;
+  position: relative;
+  z-index: 1;
+  width: min(277px, 78vw);
+  aspect-ratio: 1;
   border: 2px solid ${({ theme }) => theme.colors.primary};
   border-radius: ${({ theme }) => theme.radius.lg};
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7);
   pointer-events: none;
 `;
 
 export const Hint = styled.p`
+  position: relative;
+  z-index: 2;
   margin: 0;
   color: ${({ theme }) => theme.colors.white};
   font-size: 14px;
@@ -47,6 +56,8 @@ export const Hint = styled.p`
 `;
 
 export const ErrorText = styled.p`
+  position: relative;
+  z-index: 2;
   max-width: 300px;
   margin: 0;
   color: ${({ theme }) => theme.colors.primary};

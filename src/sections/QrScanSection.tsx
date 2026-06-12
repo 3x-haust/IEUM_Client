@@ -45,12 +45,12 @@ function QrScanSection({ onScanned }: QrScanSectionProps) {
 
   return (
     <S.Wrapper>
-      <S.CameraArea>
-        <S.Video ref={videoRef} playsInline muted autoPlay />
+      <S.Video ref={videoRef} playsInline muted autoPlay />
+      <S.CameraGuide>
         <S.Frame aria-hidden="true" />
-      </S.CameraArea>
-      <S.Hint>보이는 칸에 알맞게 QR을 비춰주세요</S.Hint>
-      {errorMessage ? <S.ErrorText>{errorMessage}</S.ErrorText> : null}
+        <S.Hint>보이는 칸에 알맞게 QR을 비춰주세요</S.Hint>
+        {errorMessage ? <S.ErrorText>{errorMessage}</S.ErrorText> : null}
+      </S.CameraGuide>
     </S.Wrapper>
   );
 }

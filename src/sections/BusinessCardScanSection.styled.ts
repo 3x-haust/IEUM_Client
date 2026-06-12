@@ -6,15 +6,18 @@ export const Wrapper = styled.section`
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   padding-bottom: calc(
     ${({ theme }) => theme.layout.bottomCTAOffset} + 56px + 28px
   );
-  background-color: ${({ theme }) => theme.colors.bgPlaceholder};
+  background-color: ${({ theme }) => theme.colors.black};
   user-select: none;
   touch-action: manipulation;
 `;
 
 export const Content = styled.div`
+  position: relative;
+  z-index: 1;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -32,12 +35,13 @@ export const Content = styled.div`
 
 export const CameraArea = styled.div`
   position: relative;
+  z-index: 1;
   width: min(343px, 100%);
   aspect-ratio: 343 / 244;
   min-height: min(244px, 32dvh);
-  overflow: hidden;
   border-radius: 24px;
-  background-color: ${({ theme }) => theme.colors.black};
+  border: 2px solid ${({ theme }) => theme.colors.primary};
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7);
 `;
 
 export const Video = styled.video`
@@ -82,6 +86,8 @@ export const StepNoticeText = styled.p`
 `;
 
 export const Hint = styled.p`
+  position: relative;
+  z-index: 2;
   max-width: 320px;
   margin: 0;
   color: ${({ theme }) => theme.colors.white};
@@ -92,6 +98,8 @@ export const Hint = styled.p`
 `;
 
 export const StatusText = styled.p<{ $active: boolean }>`
+  position: relative;
+  z-index: 2;
   min-height: 20px;
   margin: -4px 0 2px;
   color: ${({ theme, $active }) =>
@@ -103,6 +111,8 @@ export const StatusText = styled.p<{ $active: boolean }>`
 `;
 
 export const ErrorText = styled.p`
+  position: relative;
+  z-index: 2;
   max-width: 320px;
   margin: 0;
   color: ${({ theme }) => theme.colors.primary};
@@ -138,6 +148,7 @@ export const ShutterButton = styled.button`
 
 export const BottomAction = styled.div`
   position: absolute;
+  z-index: 3;
   left: ${({ theme }) => theme.layout.pagePadding};
   right: ${({ theme }) => theme.layout.pagePadding};
   bottom: ${({ theme }) => theme.layout.bottomCTAOffset};
