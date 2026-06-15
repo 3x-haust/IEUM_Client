@@ -68,11 +68,36 @@ export const ImageGroup = styled.div`
 export const EmptyBooth = styled.div<{ $color: string }>`
   position: absolute;
   z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transform: translate(-50%, -50%);
   width: 0;
   height: 0;
   background: ${({ $color }) => $color};
   pointer-events: none;
+
+  &::after {
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: nowrap;
+    -webkit-text-stroke: 2px rgba(60, 60, 67, 0.58);
+    paint-order: stroke fill;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.22);
+  }
+
+  &[data-booth-empty^='A-']::after,
+  &[data-booth-empty^='B-']::after,
+  &[data-booth-empty^='C-']::after,
+  &[data-booth-empty^='D-']::after,
+  &[data-booth-empty^='E-']::after,
+  &[data-booth-empty^='F-']::after,
+  &[data-booth-empty^='G-']::after {
+    content: attr(data-booth-empty);
+  }
 `;
 
 export const ProjectHighlight = styled.div<{ $color: string }>`

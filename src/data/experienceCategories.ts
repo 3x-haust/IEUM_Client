@@ -4,6 +4,7 @@ import type {
   ExperienceCategoryId,
   ProjectListItem,
 } from './types';
+import { isDesignDepartmentBoothSlot } from '@/utils/boothDepartment';
 import { FALLBACK_PROJECT_THUMBNAIL } from '@/utils/imageAssets';
 
 export const EXPERIENCE_CATEGORIES: ExperienceCategory[] = [
@@ -15,20 +16,6 @@ export const EXPERIENCE_CATEGORIES: ExperienceCategory[] = [
   { id: 'global', title: 'Global Experience', color: '#D88E70', x: 0.1031, y: 0.6258 },
   { id: 'journey', title: 'Journey Experience', color: '#C797C5', x: 0.8471, y: 0.8401 },
 ];
-
-// Booth-IDs that should be grouped under "DE" (design exhibits). Everything
-// else falls into the default "SW" group.
-const DE_BOOTH_IDS = new Set<string>([
-  'E1',
-  'E2',
-  'E3',
-  'E4',
-  'E5',
-  'E6',
-  'F4',
-  'F5',
-  'F6',
-]);
 
 // Derive category → project list from the booth data so a single source of
 // truth keeps booth tile labels and the list page in sync.
@@ -52,7 +39,7 @@ function buildCategoryProjects(): Record<
       id: booth.id,
       name: booth.serviceName,
       thumbnail: FALLBACK_PROJECT_THUMBNAIL,
-      group: DE_BOOTH_IDS.has(booth.id) ? 'DE' : 'SW',
+      group: isDesignDepartmentBoothSlot(booth.id) ? 'DE' : 'SW',
     });
   }
 

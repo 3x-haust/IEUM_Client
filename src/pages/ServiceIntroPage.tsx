@@ -140,7 +140,6 @@ function ServiceIntroPage({
 function ServiceIntroSkeleton() {
   return (
     <S.SkeletonScroll aria-hidden="true">
-      <S.SkeletonHero />
       <S.SkeletonTitleRow>
         <S.SkeletonTitleBlock>
           <S.SkeletonTitle />

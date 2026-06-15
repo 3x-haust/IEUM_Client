@@ -10,6 +10,7 @@ import {
   listProjectsByCategory,
   type IeumProjectSummary,
 } from '@/api/ieumApi';
+import { isDesignDepartmentBoothSlot } from '@/utils/boothDepartment';
 import { toOptimizedImagePath } from '@/utils/imageAssets';
 import * as S from './CategoryListPage.styled';
 
@@ -77,24 +78,12 @@ function CategoryListPage({
   );
 }
 
-const DE_BOOTH_IDS = new Set<string>([
-  'E1',
-  'E2',
-  'E3',
-  'E4',
-  'E5',
-  'E6',
-  'F4',
-  'F5',
-  'F6',
-]);
-
 function toProjectListItem(project: IeumProjectSummary): ProjectListItem {
   return {
     id: project.id,
     name: project.serviceName,
     thumbnail: toOptimizedImagePath(project.thumbnailUrl ?? project.thumbnailPath),
-    group: project.boothSlot && DE_BOOTH_IDS.has(project.boothSlot) ? 'DE' : 'SW',
+    group: isDesignDepartmentBoothSlot(project.boothSlot) ? 'DE' : 'SW',
     boothSlot: project.boothSlot ?? undefined,
   };
 }

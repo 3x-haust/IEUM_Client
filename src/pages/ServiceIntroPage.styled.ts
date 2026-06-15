@@ -43,19 +43,12 @@ export const SkeletonScroll = styled.div`
   padding-bottom: 40px;
 `;
 
-export const SkeletonHero = styled.div`
-  margin: 27px 20px 0;
-  border-radius: 14px;
-  aspect-ratio: 342 / 246;
-  ${skeletonSurface}
-`;
-
 export const SkeletonTitleRow = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  padding: 24px 20px 0;
+  padding: 28px 20px 0;
 `;
 
 export const SkeletonTitleBlock = styled.div`

@@ -23,7 +23,7 @@ const CATEGORY_IDS: readonly ExperienceCategoryId[] = [
 export function normalizeBoothSlot(value: string | null | undefined): string | null {
   if (!value) return null;
   const normalized = value.trim().toUpperCase();
-  return /^[A-G][1-9]$/.test(normalized) ? normalized : null;
+  return /^[A-G]-?[1-9]$/.test(normalized) ? normalized : null;
 }
 
 export function findBoothBySlot(value: string | null | undefined): Booth | null {

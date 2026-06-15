@@ -28,7 +28,7 @@ export const TileButton = styled.button<ColorProps>`
   background: ${({ $color }) => $color};
   color: #ffffff;
   border-radius: 0;
-  overflow: hidden;
+  overflow: visible;
 
   &:hover {
     filter: brightness(1.08);
@@ -93,14 +93,13 @@ export const TileLabelService = styled.span<{
   position: absolute;
   top: 50%;
   left: 50%;
-  width: calc(100% - 6px);
-  height: calc(100% - 6px);
-  max-width: calc(100% - 6px);
-  max-height: calc(100% - 6px);
-  transform: ${({ $orientation }) =>
-    $orientation === 'vertical'
-      ? 'translate(-50%, -50%) rotate(-90deg)'
-      : 'translate(-50%, -50%)'};
+  width: max-content;
+  min-width: calc(100% - 6px);
+  height: max-content;
+  min-height: calc(100% - 6px);
+  max-width: none;
+  max-height: none;
+  transform: translate(-50%, -50%);
   transform-origin: center;
   letter-spacing: 0;
   text-align: center;
@@ -109,7 +108,7 @@ export const TileLabelService = styled.span<{
   align-items: center;
   justify-content: center;
   gap: 2px;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: none;
   color: #ffffff;
   -webkit-text-stroke: 2px rgba(60, 60, 67, 0.58);
@@ -118,20 +117,20 @@ export const TileLabelService = styled.span<{
 `;
 
 export const TileLabelCode = styled.span`
-  width: 100%;
-  overflow: hidden;
+  width: max-content;
+  min-width: 0;
+  overflow: visible;
   white-space: nowrap;
-  text-overflow: clip;
   font-size: 12px;
   font-weight: 800;
   line-height: 1;
 `;
 
 export const TileLabelName = styled.span`
-  width: 100%;
-  overflow: hidden;
+  width: max-content;
+  min-width: 0;
+  overflow: visible;
   white-space: nowrap;
-  text-overflow: clip;
   font-size: 9px;
   font-weight: 800;
   line-height: 1;

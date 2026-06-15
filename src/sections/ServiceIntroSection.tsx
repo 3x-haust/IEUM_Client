@@ -7,7 +7,6 @@ import {
   loadProjectInterest,
   saveProjectInterest,
 } from '@/storage/userInteractionStorage';
-import { toOptimizedImagePath } from '@/utils/imageAssets';
 import * as S from './ServiceIntroSection.styled';
 
 interface ServiceIntroSectionProps {
@@ -42,7 +41,6 @@ function ServiceIntroSection({
       : loadProjectInterest(project.id);
   const saving =
     interestState.projectId === project.id ? interestState.saving : false;
-  const thumbnail = toOptimizedImagePath(project.thumbnailUrl ?? project.thumbnailPath);
 
   const handleInterestToggle = () => {
     if (saving) return;
@@ -66,10 +64,6 @@ function ServiceIntroSection({
   return (
     <S.Wrapper>
       <S.ScrollArea $hasCta={actionsEnabled}>
-        <S.Card>
-          <img src={thumbnail} alt={`${project.serviceName} 서비스 미리보기`} />
-        </S.Card>
-
         <S.TitleRow>
           <S.TitleText>
             <S.ServiceName>{project.serviceName}</S.ServiceName>

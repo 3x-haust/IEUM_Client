@@ -1,113 +1,41 @@
-import { z } from 'zod';
-import { API_BASE_URL } from '@/data';
 import type { BusinessCard } from '@/data';
-import { buildApiUrl } from './apiUrl';
+import { requestData } from './apiRequest';
+import { isFeedbackDisabledBoothSlot } from './feedbackAvailability';
+import {
+  getLocalDesignProject,
+  withLocalDesignProjects,
+} from './localDesignProjects';
+import {
+  contactSchema,
+  feedbackSchema,
+  projectDetailSchema,
+  projectInterestSchema,
+  projectListSchema,
+  visitorProfileSchema,
+} from './ieumSchemas';
+import type {
+  IeumFeedback,
+  IeumProjectDetail,
+  IeumProjectInterest,
+  IeumProjectMember,
+  IeumProjectSummary,
+  IeumVisitorProfile,
+} from './ieumSchemas';
 
-const stackGroupSchema = z.object({
-  category: z.string(),
-  color: z.string(),
-  items: z.array(z.string()),
-});
-
-const featureDescriptionSchema = z.object({
-  title: z.string(),
-  description: z.string(),
-});
-
-const projectSummarySchema = z.object({
-  id: z.string(),
-  serviceName: z.string(),
-  teamName: z.string(),
-  description: z.string().nullable(),
-  thumbnailUrl: z.string().nullable(),
-  thumbnailPath: z.string().nullable(),
-  experienceCategory: z.string().nullable(),
-  boothSlot: z.string().nullable(),
-  developmentStacks: z.array(z.string()),
-  designStacks: z.array(z.string()),
-  stackGroups: z.array(stackGroupSchema),
-  featureDescriptions: z.array(featureDescriptionSchema),
-  acceptsFeedback: z.boolean().default(true),
-  isPublished: z.boolean(),
-  feedbackCount: z.number(),
-  contactCount: z.number(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
-
-const projectMemberSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  displayOrder: z.number(),
-  roles: z.array(z.string()),
-});
-
-const projectDetailSchema = projectSummarySchema.extend({
-  members: z.array(projectMemberSchema),
-});
-
-const projectListSchema = z.object({
-  items: z.array(projectSummarySchema),
-  nextCursor: z.string().nullable(),
-});
-
-const visitorProfileSchema = z.object({
-  id: z.string(),
-  businessCardFileId: z.string().nullable().optional(),
-  businessCardBackFileId: z.string().nullable().optional(),
-  businessCardRegistered: z.boolean().optional(),
-  ocrRawText: z.string().nullable().optional(),
-  ocrName: z.string().nullable().optional(),
-  ocrOrganization: z.string().nullable().optional(),
-  ocrPosition: z.string().nullable().optional(),
-  ocrEmail: z.string().nullable().optional(),
-  ocrPhone: z.string().nullable().optional(),
-});
-
-const contactSchema = z.object({
-  id: z.string(),
-});
-
-const feedbackSchema = z.object({
-  id: z.string(),
-  status: z.enum(['public', 'blocked', 'deleted']),
-  moderationReason: z.string().nullable().optional(),
-});
-
-export type IeumFeedback = z.infer<typeof feedbackSchema>;
-
-const projectInterestSchema = z.object({
-  projectId: z.string(),
-  interestCount: z.number(),
-  alreadyInterested: z.boolean(),
-});
-
-const apiResponseSchema = z.object({
-  statusCode: z.number(),
-  data: z.unknown(),
-  message: z.array(z.string()),
-  timestamp: z.string(),
-});
-
-export type IeumProjectSummary = z.infer<typeof projectSummarySchema>;
-export type IeumProjectDetail = z.infer<typeof projectDetailSchema>;
-export type IeumProjectMember = z.infer<typeof projectMemberSchema>;
-export type IeumProjectInterest = z.infer<typeof projectInterestSchema>;
-export type IeumVisitorProfile = z.infer<typeof visitorProfileSchema>;
+export type {
+  IeumFeedback,
+  IeumProjectDetail,
+  IeumProjectInterest,
+  IeumProjectMember,
+  IeumProjectSummary,
+  IeumVisitorProfile,
+};
 
 interface ProjectListCacheEntry {
   readonly expiresAt: number;
   readonly promise: Promise<IeumProjectSummary[]>;
 }
 
-const FEEDBACK_DISABLED_BOOTH_SLOTS = new Set([
-  'A6',
-  'B3',
-  'C5',
-  'D5',
-  'D6',
-  'E2',
-]);
 const PROJECT_LIST_CACHE_TTL_MS = 30_000;
 const OCR_POLL_INTERVAL_MS = 1_000;
 const OCR_POLL_TIMEOUT_MS = 30_000;
@@ -125,7 +53,7 @@ export async function listProjectsByCategory(
     `/projects?category=${encodeURIComponent(category)}&limit=80&includeCounts=false`,
     projectListSchema,
   )
-    .then((data) => data.items.map(applyFeedbackPolicy))
+    .then((data) => withLocalDesignProjects(category, data.items).map(applyFeedbackPolicy))
     .catch((error: unknown) => {
       projectListCache.delete(category);
       throw error;
@@ -199,6 +127,8 @@ async function mapWithConcurrency<TInput, TOutput>(
 export async function getProjectDetail(
   projectId: string,
 ): Promise<IeumProjectDetail> {
+  const localProject = getLocalDesignProject(projectId);
+  if (localProject) return applyFeedbackPolicy(localProject);
   const project = await requestData(`/projects/${projectId}`, projectDetailSchema);
   return applyFeedbackPolicy(project);
 }
@@ -302,43 +232,10 @@ function delay(milliseconds: number): Promise<void> {
   });
 }
 
-async function requestData<TSchema extends z.ZodType>(
-  path: string,
-  schema: TSchema,
-  init?: RequestInit,
-): Promise<z.infer<TSchema>> {
-  const headers = new Headers(init?.headers);
-  headers.set('Accept', 'application/json');
-  if (!(init?.body instanceof FormData)) {
-    headers.set('Content-Type', 'application/json');
-  }
-  const response = await fetch(buildApiUrl(API_BASE_URL, path), {
-    ...init,
-    headers,
-  });
-  const payload: unknown = await response.json();
-  if (!response.ok) {
-    throw new Error(readErrorMessage(payload) ?? `API request failed: ${response.status}`);
-  }
-  const wrapped = apiResponseSchema.parse(payload);
-  return schema.parse(wrapped.data);
-}
-
-function readErrorMessage(payload: unknown): string | null {
-  const parsed = z.object({ message: z.union([z.string(), z.array(z.string())]).optional() }).safeParse(payload);
-  if (!parsed.success || !parsed.data.message) return null;
-  return Array.isArray(parsed.data.message)
-    ? parsed.data.message.join('\n')
-    : parsed.data.message;
-}
-
 function applyFeedbackPolicy<TProject extends IeumProjectSummary>(
   project: TProject,
 ): TProject {
-  if (
-    project.boothSlot &&
-    FEEDBACK_DISABLED_BOOTH_SLOTS.has(project.boothSlot)
-  ) {
+  if (isFeedbackDisabledBoothSlot(project.boothSlot)) {
     return { ...project, acceptsFeedback: false };
   }
   return project;

@@ -23,26 +23,12 @@ export const ScrollArea = styled.div<{ $hasCta: boolean }>`
   }
 `;
 
-export const Card = styled.div`
-  margin: 27px 20px 0;
-  border-radius: 14px;
-  overflow: hidden;
-
-  img {
-    width: 100%;
-    aspect-ratio: 342 / 246;
-    height: auto;
-    display: block;
-    object-fit: cover;
-  }
-`;
-
 export const TitleRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 24px 20px 0;
+  padding: 28px 20px 0;
 `;
 
 export const TitleText = styled.div`
