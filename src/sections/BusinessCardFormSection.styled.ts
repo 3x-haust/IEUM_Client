@@ -86,11 +86,13 @@ export const LoadingTitle = styled.p`
 `;
 
 export const LoadingDescription = styled.p`
-  max-width: 220px;
+  max-width: 260px;
   margin: 0;
   color: ${({ theme }) => theme.colors.gray500};
   font-size: 14px;
   line-height: 1.5;
+  word-break: keep-all;
+  overflow-wrap: normal;
 `;
 
 export const ScrollFade = styled.div`

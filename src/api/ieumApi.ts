@@ -56,6 +56,10 @@ export async function listProjectsByCategory(
     .then((data) => withLocalDesignProjects(category, data.items).map(applyFeedbackPolicy))
     .catch((error: unknown) => {
       projectListCache.delete(category);
+      const localProjects = withLocalDesignProjects(category, []);
+      if (localProjects.length > 0) {
+        return localProjects.map(applyFeedbackPolicy);
+      }
       throw error;
     });
   projectListCache.set(category, {

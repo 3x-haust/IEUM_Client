@@ -152,9 +152,6 @@ function MainAppFlow() {
   const [pendingBoothSlot, setPendingBoothSlot] = useState<string | null>(
     initial.boothSlot,
   );
-  const [mapLocationVisible, setMapLocationVisible] = useState(
-    Boolean(initial.boothSlot || initial.highlightBoothSlot),
-  );
   const [highlightedBoothId, setHighlightedBoothId] = useState<string | null>(
     findBoothBySlot(initial.boothSlot ?? initial.highlightBoothSlot)?.id ?? null,
   );
@@ -182,10 +179,10 @@ function MainAppFlow() {
 
   const handleServiceIntroBack = useCallback(() => {
     if (serviceIntroBackTarget === 'map') {
-      if (highlightedBoothId && mapLocationVisible) {
+      if (highlightedBoothId) {
         setPage('map');
         navigate(
-          `/app?highlightBooth=${encodeURIComponent(highlightedBoothId)}&location=1`,
+          `/app?highlightBooth=${encodeURIComponent(highlightedBoothId)}`,
           { replace: true },
         );
         return;
@@ -197,7 +194,6 @@ function MainAppFlow() {
   }, [
     goToMap,
     highlightedBoothId,
-    mapLocationVisible,
     navigate,
     serviceIntroBackTarget,
     setPage,
@@ -227,7 +223,6 @@ function MainAppFlow() {
       .then((resolved) => {
         if (!active) return;
         setHighlightedBoothId(booth.id);
-        setMapLocationVisible(true);
         setSelectedCategory(resolved?.categoryId ?? booth.categoryId);
         setSelectedProject(null);
         setActionsEnabled(true);
@@ -260,7 +255,6 @@ function MainAppFlow() {
     goToServiceIntro,
     pendingBoothSlot,
     setHighlightedBoothId,
-    setMapLocationVisible,
   ]);
 
   const handleBoothPick = useCallback(
@@ -268,7 +262,6 @@ function MainAppFlow() {
       setSelectedCategory(booth.categoryId);
       setSelectedProject(null);
       setHighlightedBoothId(null);
-      setMapLocationVisible(false);
       setActionsEnabled(false);
       setServiceVisited(true);
       setToast(null);
@@ -294,7 +287,6 @@ function MainAppFlow() {
       goToServiceIntro,
       setActionsEnabled,
       setHighlightedBoothId,
-      setMapLocationVisible,
       setPage,
       setSelectedCategory,
       setSelectedProject,
@@ -399,7 +391,6 @@ function MainAppFlow() {
               if (entry.kind === 'project') {
                 setSelectedProjectId(entry.projectId);
                 setSelectedProject(null);
-                setMapLocationVisible(true);
                 goToServiceIntro();
                 return;
               }
@@ -527,7 +518,6 @@ function MainAppFlow() {
               setPage('category-list');
             }}
             highlightedBoothId={highlightedBoothId}
-            showLocationDebug={mapLocationVisible}
             showTutorial={!mapTutorialDismissed}
             onTutorialDismiss={() => {
               markMapTutorialDismissed();

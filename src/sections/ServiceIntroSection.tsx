@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   markProjectInterest,
   type IeumProjectDetail,
@@ -7,6 +7,11 @@ import {
   loadProjectInterest,
   saveProjectInterest,
 } from '@/storage/userInteractionStorage';
+import { toOptimizedImagePath } from '@/utils/imageAssets';
+import {
+  settleProjectInterestSave,
+  toggleProjectInterest,
+} from './projectInterestState';
 import * as S from './ServiceIntroSection.styled';
 
 interface ServiceIntroSectionProps {
@@ -30,6 +35,7 @@ function ServiceIntroSection({
   feedbackSubmitted,
   contactSubmitted,
 }: ServiceIntroSectionProps) {
+  const activeInterestRequestId = useRef(0);
   const [interestState, setInterestState] = useState(() => ({
     projectId: project.id,
     interested: loadProjectInterest(project.id),
@@ -41,29 +47,64 @@ function ServiceIntroSection({
       : loadProjectInterest(project.id);
   const saving =
     interestState.projectId === project.id ? interestState.saving : false;
+  const thumbnail =
+    project.thumbnailUrl ??
+    (project.thumbnailPath ? toOptimizedImagePath(project.thumbnailPath) : null);
 
   const handleInterestToggle = () => {
-    if (saving) return;
-    if (interested) {
-      saveProjectInterest(project.id, false);
-      setInterestState({ projectId: project.id, interested: false, saving: false });
+    const result = toggleProjectInterest(project.id, {
+      projectId: project.id,
+      interested,
+      saving,
+    });
+
+    if (!result.shouldRequestInterest) {
+      activeInterestRequestId.current += 1;
+      saveProjectInterest(project.id, result.shouldPersistInterest);
+      setInterestState(result.state);
       return;
     }
-    saveProjectInterest(project.id, true);
-    setInterestState({ projectId: project.id, interested: true, saving: true });
+
+    const requestId = activeInterestRequestId.current + 1;
+    activeInterestRequestId.current = requestId;
+    saveProjectInterest(project.id, result.shouldPersistInterest);
+    setInterestState(result.state);
     void markProjectInterest(project.id)
       .then(() => {
-        setInterestState({ projectId: project.id, interested: true, saving: false });
+        setInterestState((state) =>
+          settleProjectInterestSave({
+            activeRequestId: activeInterestRequestId.current,
+            fallbackInterested: true,
+            projectId: project.id,
+            requestId,
+            state,
+          }),
+        );
       })
       .catch(() => {
+        if (activeInterestRequestId.current !== requestId) return;
         saveProjectInterest(project.id, false);
-        setInterestState({ projectId: project.id, interested: false, saving: false });
+        setInterestState((state) =>
+          settleProjectInterestSave({
+            activeRequestId: activeInterestRequestId.current,
+            fallbackInterested: false,
+            projectId: project.id,
+            requestId,
+            state,
+          }),
+        );
       });
   };
 
   return (
     <S.Wrapper>
       <S.ScrollArea $hasCta={actionsEnabled}>
+        {thumbnail ? (
+          <S.Card>
+            <img src={thumbnail} alt={`${project.serviceName} 대표 이미지`} />
+          </S.Card>
+        ) : null}
+
         <S.TitleRow>
           <S.TitleText>
             <S.ServiceName>{project.serviceName}</S.ServiceName>
@@ -72,8 +113,8 @@ function ServiceIntroSection({
             type="button"
             aria-label={interested ? '관심 취소' : '관심 프로젝트'}
             aria-pressed={interested}
+            aria-busy={saving}
             $active={interested}
-            disabled={saving}
             onClick={handleInterestToggle}
           >
             <S.HeartIcon

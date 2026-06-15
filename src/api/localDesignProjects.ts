@@ -17,6 +17,25 @@ interface LocalDesignProjectInput {
 
 const DESIGN_STACK_COLOR = '#C797C5';
 const LOCAL_PROJECT_TIMESTAMP = '2026-06-15T00:00:00.000Z';
+const DESIGN_PROJECT_IMAGE_PATHS = new Map<number, string>([
+  [42, '/assets/design-projects/inflow.webp'],
+  [43, '/assets/design-projects/sfoc.webp'],
+  [44, '/assets/design-projects/lazie5.webp'],
+  [45, '/assets/design-projects/ddomong.webp'],
+  [48, '/assets/design-projects/digit.webp'],
+  [49, '/assets/design-projects/bookie.webp'],
+  [50, '/assets/design-projects/stepin.webp'],
+  [51, '/assets/design-projects/veritas.webp'],
+  [52, '/assets/design-projects/siseon.webp'],
+  [53, '/assets/design-projects/haube.webp'],
+  [54, '/assets/design-projects/pongdang.webp'],
+  [55, '/assets/design-projects/100k.webp'],
+  [56, '/assets/design-projects/moduwa.webp'],
+  [57, '/assets/design-projects/bigwing.webp'],
+  [58, '/assets/design-projects/f1rst.webp'],
+  [59, '/assets/design-projects/oke.webp'],
+  [60, '/assets/design-projects/refab.webp'],
+]);
 
 const LOCAL_DESIGN_PROJECT_INPUTS = [
   { catalogId: 42, serviceName: 'INFLOW', boothSlot: 'A-1', experienceCategory: 'ai', description: '브랜드와 인플루언서를 연결하여 캠페인 제안부터 콘텐츠 관리, 성과 분석까지 한 번에 지원하는 인플루언서 마케팅 협업 플랫폼', features: '인플루언서 탐색, 캠페인 관리, 채팅, 콘텐츠 관리, 성과 분석을 한 흐름에서 지원합니다.', stacks: 'Figma', memberName: '김민선', acceptsFeedback: true },
@@ -46,6 +65,20 @@ export function getLocalDesignProject(projectId: string): IeumProjectDetail | nu
   return LOCAL_DESIGN_PROJECTS.find((project) => project.id === projectId) ?? null;
 }
 
+export function findLocalDesignProjectByBooth(
+  boothSlot: string | null | undefined,
+  serviceName: string,
+): IeumProjectSummary | null {
+  const normalizedBoothSlot = normalizeLocalBoothSlot(boothSlot);
+  const normalizedServiceName = normalizeLocalServiceName(serviceName);
+  const project = LOCAL_DESIGN_PROJECTS.find(
+    (item) => normalizeLocalBoothSlot(item.boothSlot) === normalizedBoothSlot,
+  ) ?? LOCAL_DESIGN_PROJECTS.find(
+    (item) => normalizeLocalServiceName(item.serviceName) === normalizedServiceName,
+  );
+  return project ? toSummary(project) : null;
+}
+
 export function withLocalDesignProjects(
   category: string,
   projects: readonly IeumProjectSummary[],
@@ -67,7 +100,7 @@ function toProject(input: LocalDesignProjectInput): IeumProjectDetail {
     teamName: input.serviceName,
     description: input.description,
     thumbnailUrl: null,
-    thumbnailPath: null,
+    thumbnailPath: DESIGN_PROJECT_IMAGE_PATHS.get(input.catalogId) ?? null,
     experienceCategory: input.experienceCategory,
     boothSlot: input.boothSlot,
     developmentStacks: [],
@@ -98,6 +131,16 @@ function parseStacks(stacks: string): string[] {
     .split(',')
     .map((stack) => stack.trim())
     .filter((stack) => stack.length > 0);
+}
+
+function normalizeLocalBoothSlot(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const normalized = value.trim().toUpperCase();
+  return /^[A-G]-?[1-9]$/.test(normalized) ? normalized : null;
+}
+
+function normalizeLocalServiceName(value: string): string {
+  return value.trim().replace(/\s+/g, ' ');
 }
 
 function toSummary(project: IeumProjectDetail): IeumProjectSummary {
