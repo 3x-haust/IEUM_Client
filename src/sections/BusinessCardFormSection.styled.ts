@@ -40,13 +40,19 @@ export const FieldList = styled.div`
 `;
 
 export const OcrNotice = styled.p`
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
   padding: 14px 16px;
   border: 1px solid rgba(224, 91, 102, 0.28);
   border-radius: ${({ theme }) => theme.radius.sm};
   background-color: rgba(224, 91, 102, 0.08);
   color: ${({ theme }) => theme.colors.primary};
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.55;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 `;
 
 export const LoadingPanel = styled.div`
