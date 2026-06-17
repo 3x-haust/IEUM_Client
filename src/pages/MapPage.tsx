@@ -23,15 +23,9 @@ import type {
 import {
   CategoryPillButton,
   CategoryTileButton,
-  LocationDebugOverlay,
   MapCanvas,
   MapTutorialOverlay,
 } from '@/components';
-import {
-  projectLocationToMap,
-  readCompassHeading,
-  toMapHeading,
-} from '@/utils/locationMapping';
 import * as S from './MapPage.styled';
 
 interface MapPageProps {
@@ -39,7 +33,6 @@ interface MapPageProps {
   onPickCategory: (categoryId: ExperienceCategoryId) => void;
   onPickBooth: (booth: Booth) => void;
   highlightedBoothId?: string | null;
-  showLocationDebug?: boolean;
   showTutorial?: boolean;
   onTutorialDismiss?: () => void;
 }
@@ -140,27 +133,15 @@ interface ActivePointer {
   y: number;
 }
 
-interface LocationSample {
-  readonly latitude: number;
-  readonly longitude: number;
-  readonly accuracy: number;
-  readonly heading: number | null;
-}
-
 function MapPage({
   onClickQr,
   onPickCategory,
   onPickBooth,
   highlightedBoothId = null,
-  showLocationDebug = false,
   showTutorial = false,
   onTutorialDismiss,
 }: MapPageProps) {
   const stageRef = useRef<HTMLDivElement>(null);
-  const showQueryLocationDebug =
-    typeof window !== 'undefined' &&
-    new URLSearchParams(window.location.search).get('debugLocation') === '1';
-  const shouldShowLocationDebug = showLocationDebug || showQueryLocationDebug;
   const highlightedBooth =
     highlightedBoothId === null
       ? null
@@ -171,9 +152,6 @@ function MapPage({
   const [scale, setScale] = useState(1);
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
-  const [locationSample, setLocationSample] =
-    useState<LocationSample | null>(null);
-  const [compassHeading, setCompassHeading] = useState<number | null>(null);
 
   const dragRef = useRef<{
     pointerId: number;
@@ -285,36 +263,6 @@ function MapPage({
       window.removeEventListener('orientationchange', onResize);
     };
   }, [recomputeBaseSize]);
-
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        setLocationSample({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          heading: position.coords.heading,
-        });
-      },
-      () => undefined,
-      { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 },
-    );
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const handleOrientation = (event: Event) => {
-      setCompassHeading(readCompassHeading(event as DeviceOrientationEvent));
-    };
-    window.addEventListener('deviceorientation', handleOrientation, true);
-    window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-    return () => {
-      window.removeEventListener('deviceorientation', handleOrientation, true);
-      window.removeEventListener('deviceorientationabsolute', handleOrientation, true);
-    };
-  }, []);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -474,19 +422,6 @@ function MapPage({
     onPickCategory(category.id);
   };
 
-  const mapLocation =
-    locationSample && baseSize.w > 0
-      ? projectLocationToMap(locationSample)
-      : null;
-  const locationMarker =
-    mapLocation === null
-      ? null
-      : {
-          x: tx + mapLocation.x * baseSize.w * scale,
-          y: ty + mapLocation.y * baseSize.h * scale,
-          heading: toMapHeading(compassHeading ?? locationSample?.heading ?? null),
-        };
-
   return (
     <S.Page>
       <S.Header>
@@ -590,25 +525,6 @@ function MapPage({
               );
             })}
         </S.PillLayer>
-        {locationMarker ? (
-          <S.LocationMarkerLayer aria-hidden="true">
-            <S.UserLocationMarker
-              style={{
-                left: `${locationMarker.x}px`,
-                top: `${locationMarker.y}px`,
-              }}
-            >
-              {locationMarker.heading !== null ? (
-                <S.UserLocationArrow
-                  style={{
-                    transform: `translate(-50%, -78%) rotate(${locationMarker.heading}deg)`,
-                  }}
-                />
-              ) : null}
-              <S.UserLocationDot />
-            </S.UserLocationMarker>
-          </S.LocationMarkerLayer>
-        ) : null}
       </S.Stage>
 
       {!showTutorial ? (
@@ -624,7 +540,6 @@ function MapPage({
       {showTutorial && onTutorialDismiss ? (
         <MapTutorialOverlay onDismiss={onTutorialDismiss} />
       ) : null}
-      {shouldShowLocationDebug ? <LocationDebugOverlay /> : null}
     </S.Page>
   );
 }
