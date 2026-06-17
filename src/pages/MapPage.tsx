@@ -45,6 +45,8 @@ const DRAG_THRESHOLD_PX = 6;
 const PINCH_THRESHOLD_PX = 4;
 const NATURAL_MAP_W = FIGMA_MAP_SIZE.w;
 const NATURAL_MAP_H = FIGMA_MAP_SIZE.h;
+const MIN_HITBOX_W = 96 / NATURAL_MAP_W;
+const MIN_HITBOX_H = 96 / NATURAL_MAP_H;
 const MOBILE_INITIAL_TOP_OFFSET = 58;
 const MAP_HEADER_SAFE_TOP = 58;
 
@@ -99,6 +101,21 @@ function tileStyle(item: {
     width: `${item.w * 100}%`,
     height: `${item.h * 100}%`,
   } as CSSProperties;
+}
+
+function expandedHitboxStyle(booth: Booth): CSSProperties {
+  return tileStyle({
+    ...booth,
+    w: Math.max(booth.w, MIN_HITBOX_W),
+    h: Math.max(booth.h, MIN_HITBOX_H),
+  });
+}
+
+function needsExpandedHitbox(booth: Booth): boolean {
+  return (
+    isInteractiveBooth(booth) &&
+    (booth.w < MIN_HITBOX_W || booth.h < MIN_HITBOX_H)
+  );
 }
 
 function shouldRenderBoothLabel(booth: Booth): boolean {
@@ -470,6 +487,22 @@ function MapPage({
               />
             ),
           )}
+          {BOOTHS.filter(needsExpandedHitbox).map((booth) => (
+            <CategoryTileButton
+              key={`${booth.id}-hitbox`}
+              color={booth.color}
+              label={booth.title}
+              serviceName={booth.serviceName}
+              showLabel={false}
+              showServiceName={false}
+              hitboxOnly
+              style={expandedHitboxStyle(booth)}
+              onClick={(e) => handleBoothClick(booth, e)}
+              aria-hidden="true"
+              tabIndex={-1}
+              data-booth-hitbox={booth.id}
+            />
+          ))}
           {highlightedBooth ? (
             <S.ProjectHighlight
               $color={highlightedBooth.color}
