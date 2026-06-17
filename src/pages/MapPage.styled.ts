@@ -136,39 +136,66 @@ export const LocationMarkerLayer = styled.div`
 
 export const UserLocationMarker = styled.div`
   position: absolute;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   transform: translate(-50%, -50%);
+  filter: drop-shadow(0 5px 14px rgba(78, 62, 133, 0.24));
   transition:
-    left 240ms ease,
-    top 240ms ease;
+    left 220ms ease,
+    top 220ms ease;
 `;
 
 export const UserLocationArrow = styled.span`
   position: absolute;
   left: 50%;
   top: 50%;
+  z-index: 0;
   width: 24px;
-  height: 34px;
-  transform-origin: center;
-  background: rgba(78, 62, 133, 0.94);
-  clip-path: polygon(50% 0, 84% 100%, 50% 78%, 16% 100%);
-  filter: drop-shadow(0 3px 8px rgba(78, 62, 133, 0.32));
+  height: 36px;
+  border-radius: 10px 10px 5px 5px;
+  background: #ffffff;
+  clip-path: polygon(
+    50% 0,
+    100% 66%,
+    66% 66%,
+    66% 100%,
+    34% 100%,
+    34% 66%,
+    0 66%
+  );
+  transform-origin: 50% 78%;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    background: ${({ theme }) => theme.colors.primary};
+    clip-path: inherit;
+  }
 `;
 
 export const UserLocationDot = styled.span`
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 16px;
-  height: 16px;
-  border: 3px solid #ffffff;
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  border: 2px solid rgba(236, 86, 101, 0.36);
   border-radius: 999px;
-  background: ${({ theme }) => theme.colors.primary};
+  background: #ffffff;
   box-shadow:
-    0 0 0 7px rgba(236, 86, 101, 0.18),
-    0 5px 14px rgba(78, 62, 133, 0.26);
+    0 0 0 7px rgba(236, 86, 101, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.88);
   transform: translate(-50%, -50%);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: inherit;
+    background: ${({ theme }) => theme.colors.primary};
+  }
 `;
 
 export const QrFab = styled.button`

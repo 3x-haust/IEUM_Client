@@ -601,7 +601,7 @@ function MapPage({
               {locationMarker.heading !== null ? (
                 <S.UserLocationArrow
                   style={{
-                    transform: `translate(-50%, -50%) rotate(${locationMarker.heading}deg)`,
+                    transform: `translate(-50%, -78%) rotate(${locationMarker.heading}deg)`,
                   }}
                 />
               ) : null}

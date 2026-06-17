@@ -15,10 +15,11 @@ type CompassEvent = DeviceOrientationEvent & {
 };
 
 const METERS_PER_DEGREE_LATITUDE = 111_320;
-const IDW_POWER = 4;
 const CALIBRATION_EPSILON_METERS = 0.02;
 const RAW_HEADING_FACING_G1_DEG = 198.8;
 const MAP_HEADING_FACING_G1_DEG = 270;
+const ESTIMATED_G1_TO_G7_METERS = 18;
+const MAX_PROJECTED_DISTANCE_METERS = 85;
 
 const RAW_CALIBRATION_POINTS = [
   { boothId: 'G1', latitude: 37.4662117, longitude: 126.9318716 },
@@ -39,32 +40,43 @@ export const LOCATION_CALIBRATION_POINTS = RAW_CALIBRATION_POINTS.map((point) =>
   };
 });
 
+const G1_CALIBRATION_POINT = findCalibrationPoint('G1');
+const G1_BOOTH = findBooth('G1');
+const G7_BOOTH = findBooth('G7');
+
 export const MAP_HEADING_OFFSET_DEG = normalizeDegrees(
   MAP_HEADING_FACING_G1_DEG - RAW_HEADING_FACING_G1_DEG,
 );
+export const MAP_UNITS_PER_METER =
+  Math.abs(G7_BOOTH.y - G1_BOOTH.y) / ESTIMATED_G1_TO_G7_METERS;
 
 export function projectLocationToMap(
   location: GeoLocationPoint,
 ): MapLocationPoint {
-  let weightSum = 0;
-  let weightedX = 0;
-  let weightedY = 0;
-
   for (const point of LOCATION_CALIBRATION_POINTS) {
     const distance = distanceMeters(location, point);
     if (distance <= CALIBRATION_EPSILON_METERS) {
       return { x: point.x, y: point.y };
     }
-
-    const weight = 1 / Math.max(Math.pow(distance, IDW_POWER), Number.EPSILON);
-    weightSum += weight;
-    weightedX += point.x * weight;
-    weightedY += point.y * weight;
   }
 
+  const delta = deltaMeters(G1_CALIBRATION_POINT, location);
+  const distance = Math.min(
+    Math.hypot(delta.east, delta.north),
+    MAX_PROJECTED_DISTANCE_METERS,
+  );
+  if (distance === 0) return { x: G1_BOOTH.x, y: G1_BOOTH.y };
+
+  const rawHeading = normalizeDegrees(
+    Math.atan2(delta.east, delta.north) * (180 / Math.PI),
+  );
+  const mapHeading = toMapHeading(rawHeading) ?? 0;
+  const mapHeadingRad = mapHeading * (Math.PI / 180);
+  const mapDistance = distance * MAP_UNITS_PER_METER;
+
   return {
-    x: clamp01(weightedX / weightSum),
-    y: clamp01(weightedY / weightSum),
+    x: clamp01(G1_BOOTH.x + Math.sin(mapHeadingRad) * mapDistance),
+    y: clamp01(G1_BOOTH.y - Math.cos(mapHeadingRad) * mapDistance),
   };
 }
 
@@ -88,12 +100,39 @@ export function readCompassHeading(
 }
 
 function distanceMeters(a: GeoLocationPoint, b: GeoLocationPoint): number {
-  const meanLatitude = ((a.latitude + b.latitude) / 2) * (Math.PI / 180);
+  const delta = deltaMeters(a, b);
+  return Math.hypot(delta.east, delta.north);
+}
+
+function findCalibrationPoint(
+  boothId: string,
+): (typeof LOCATION_CALIBRATION_POINTS)[number] {
+  const point = LOCATION_CALIBRATION_POINTS.find((item) => item.boothId === boothId);
+  if (!point) {
+    throw new Error(`Missing location calibration point: ${boothId}`);
+  }
+  return point;
+}
+
+function findBooth(boothId: string): (typeof BOOTHS)[number] {
+  const booth = BOOTHS.find((item) => item.id === boothId);
+  if (!booth) {
+    throw new Error(`Missing location calibration booth: ${boothId}`);
+  }
+  return booth;
+}
+
+function deltaMeters(
+  from: GeoLocationPoint,
+  to: GeoLocationPoint,
+): { readonly east: number; readonly north: number } {
+  const meanLatitude = ((from.latitude + to.latitude) / 2) * (Math.PI / 180);
   const metersPerDegreeLongitude =
     METERS_PER_DEGREE_LATITUDE * Math.cos(meanLatitude);
-  const dx = (a.longitude - b.longitude) * metersPerDegreeLongitude;
-  const dy = (a.latitude - b.latitude) * METERS_PER_DEGREE_LATITUDE;
-  return Math.hypot(dx, dy);
+  return {
+    east: (to.longitude - from.longitude) * metersPerDegreeLongitude,
+    north: (to.latitude - from.latitude) * METERS_PER_DEGREE_LATITUDE,
+  };
 }
 
 function normalizeDegrees(value: number): number {
