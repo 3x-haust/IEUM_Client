@@ -50,6 +50,12 @@ function ServiceIntroSection({
   const thumbnail =
     project.thumbnailUrl ??
     (project.thumbnailPath ? toOptimizedImagePath(project.thumbnailPath) : null);
+  const serviceIntroTitle =
+    project.boothSlot === 'E-1' &&
+    project.serviceName === '십만원권' &&
+    project.members.some((member) => member.name === '정지영')
+      ? '한국은행화폐박물관 기획 전시: 십만원권'
+      : project.serviceName;
 
   const handleInterestToggle = () => {
     const result = toggleProjectInterest(project.id, {
@@ -101,13 +107,13 @@ function ServiceIntroSection({
       <S.ScrollArea $hasCta={actionsEnabled}>
         {thumbnail ? (
           <S.Card>
-            <img src={thumbnail} alt={`${project.serviceName} 대표 이미지`} />
+            <img src={thumbnail} alt={`${serviceIntroTitle} 대표 이미지`} />
           </S.Card>
         ) : null}
 
         <S.TitleRow>
           <S.TitleText>
-            <S.ServiceName>{project.serviceName}</S.ServiceName>
+            <S.ServiceName>{serviceIntroTitle}</S.ServiceName>
           </S.TitleText>
           <S.LikeButton
             type="button"
@@ -127,9 +133,11 @@ function ServiceIntroSection({
           </S.LikeButton>
         </S.TitleRow>
 
-        <S.Description>
-          {project.description}
-        </S.Description>
+        {project.description ? (
+          <S.Description>
+            {project.description}
+          </S.Description>
+        ) : null}
 
         <S.TagList>
           {project.stackGroups.flatMap((group) =>
