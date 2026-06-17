@@ -127,6 +127,50 @@ export const PillLayer = styled.div`
   }
 `;
 
+export const LocationMarkerLayer = styled.div`
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+`;
+
+export const UserLocationMarker = styled.div`
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  transform: translate(-50%, -50%);
+  transition:
+    left 240ms ease,
+    top 240ms ease;
+`;
+
+export const UserLocationArrow = styled.span`
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24px;
+  height: 34px;
+  transform-origin: center;
+  background: rgba(78, 62, 133, 0.94);
+  clip-path: polygon(50% 0, 84% 100%, 50% 78%, 16% 100%);
+  filter: drop-shadow(0 3px 8px rgba(78, 62, 133, 0.32));
+`;
+
+export const UserLocationDot = styled.span`
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.colors.primary};
+  box-shadow:
+    0 0 0 7px rgba(236, 86, 101, 0.18),
+    0 5px 14px rgba(78, 62, 133, 0.26);
+  transform: translate(-50%, -50%);
+`;
+
 export const QrFab = styled.button`
   position: absolute;
   right: 31px;

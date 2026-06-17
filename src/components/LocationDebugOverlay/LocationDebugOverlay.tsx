@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { readCompassHeading, toMapHeading } from '@/utils/locationMapping';
 import * as S from './LocationDebugOverlay.styled';
 
 type LocationSample = {
@@ -8,10 +9,6 @@ type LocationSample = {
   readonly heading: number | null;
   readonly speed: number | null;
   readonly timestamp: number;
-};
-
-type CompassEvent = DeviceOrientationEvent & {
-  readonly webkitCompassHeading?: number;
 };
 
 type DeviceOrientationPermission = typeof DeviceOrientationEvent & {
@@ -24,16 +21,6 @@ function formatNumber(value: number, digits: number): string {
 
 function formatNullable(value: number | null, digits: number, suffix = ''): string {
   return value === null ? '-' : `${formatNumber(value, digits)}${suffix}`;
-}
-
-function readCompassHeading(event: CompassEvent): number | null {
-  if (typeof event.webkitCompassHeading === 'number') {
-    return event.webkitCompassHeading;
-  }
-  if (typeof event.alpha === 'number') {
-    return (360 - event.alpha + 360) % 360;
-  }
-  return null;
 }
 
 function getOrientationPermission(): DeviceOrientationPermission | null {
@@ -71,19 +58,26 @@ function LocationDebugOverlay() {
 
   useEffect(() => {
     const onOrientation = (event: DeviceOrientationEvent) => {
-      setCompassHeading(readCompassHeading(event as CompassEvent));
+      setCompassHeading(readCompassHeading(event));
     };
     window.addEventListener('deviceorientation', onOrientation, true);
-    return () => window.removeEventListener('deviceorientation', onOrientation, true);
+    window.addEventListener('deviceorientationabsolute', onOrientation, true);
+    return () => {
+      window.removeEventListener('deviceorientation', onOrientation, true);
+      window.removeEventListener('deviceorientationabsolute', onOrientation, true);
+    };
   }, []);
 
   const coordinateText = useMemo(() => {
     if (!sample) return '';
+    const rawHeading = compassHeading ?? sample.heading;
+    const mapHeading = toMapHeading(rawHeading);
     return [
       `lat=${formatNumber(sample.latitude, 7)}`,
       `lng=${formatNumber(sample.longitude, 7)}`,
       `accuracy=${formatNumber(sample.accuracy, 1)}m`,
-      `heading=${formatNullable(compassHeading ?? sample.heading, 1, 'deg')}`,
+      `heading=${formatNullable(rawHeading, 1, 'deg')}`,
+      `mapHeading=${formatNullable(mapHeading, 1, 'deg')}`,
     ].join(', ');
   }, [compassHeading, sample]);
 
@@ -103,6 +97,9 @@ function LocationDebugOverlay() {
     setMessage('좌표 복사됨');
   };
 
+  const rawHeading = compassHeading ?? sample?.heading ?? null;
+  const mapHeading = toMapHeading(rawHeading);
+
   return (
     <S.Panel>
       <S.Header>
@@ -119,7 +116,9 @@ function LocationDebugOverlay() {
         <S.Term>정확도</S.Term>
         <S.Value>{sample ? `${formatNumber(sample.accuracy, 1)}m` : '-'}</S.Value>
         <S.Term>방향</S.Term>
-        <S.Value>{formatNullable(compassHeading ?? sample?.heading ?? null, 1, 'deg')}</S.Value>
+        <S.Value>{formatNullable(rawHeading, 1, 'deg')}</S.Value>
+        <S.Term>지도 방향</S.Term>
+        <S.Value>{formatNullable(mapHeading, 1, 'deg')}</S.Value>
         <S.Term>속도</S.Term>
         <S.Value>{formatNullable(sample?.speed ?? null, 2, 'm/s')}</S.Value>
       </S.Grid>
