@@ -2,7 +2,6 @@ import {
   listProjectsByCategory,
   type IeumProjectSummary,
 } from '@/api/ieumApi';
-import { findLocalDesignProjectByBooth } from '@/api/localDesignProjects';
 import { BOOTHS, type Booth, type ExperienceCategoryId } from '@/data';
 
 export interface ResolvedBoothProject {
@@ -43,18 +42,6 @@ export function findBoothBySlot(value: string | null | undefined): Booth | null 
 export async function resolveProjectForBooth(
   booth: Booth,
 ): Promise<ResolvedBoothProject | null> {
-  const localProject = findLocalDesignProjectByBooth(
-    booth.title,
-    booth.serviceName,
-  );
-  if (localProject) {
-    return {
-      booth,
-      categoryId: booth.categoryId,
-      project: localProject,
-    };
-  }
-
   const primaryProjects = await listProjectsByCategory(booth.categoryId);
   const primaryProject = findMatchingProject(primaryProjects, booth);
   if (primaryProject) {

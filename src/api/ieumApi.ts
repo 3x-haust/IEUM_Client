@@ -2,11 +2,6 @@ import type { BusinessCard } from '@/data';
 import { requestData } from './apiRequest';
 import { isFeedbackDisabledBoothSlot } from './feedbackAvailability';
 import {
-  getLocalDesignProject,
-  isLocalDesignProjectId,
-  withLocalDesignProjects,
-} from './localDesignProjects';
-import {
   contactSchema,
   feedbackSchema,
   projectDetailSchema,
@@ -54,13 +49,9 @@ export async function listProjectsByCategory(
     `/projects?category=${encodeURIComponent(category)}&limit=80&includeCounts=false`,
     projectListSchema,
   )
-    .then((data) => withLocalDesignProjects(category, data.items).map(applyFeedbackPolicy))
+    .then((data) => data.items.map(applyFeedbackPolicy))
     .catch((error: unknown) => {
       projectListCache.delete(category);
-      const localProjects = withLocalDesignProjects(category, []);
-      if (localProjects.length > 0) {
-        return localProjects.map(applyFeedbackPolicy);
-      }
       throw error;
     });
   projectListCache.set(category, {
@@ -132,8 +123,6 @@ async function mapWithConcurrency<TInput, TOutput>(
 export async function getProjectDetail(
   projectId: string,
 ): Promise<IeumProjectDetail> {
-  const localProject = getLocalDesignProject(projectId);
-  if (localProject) return applyFeedbackPolicy(localProject);
   const project = await requestData(`/projects/${projectId}`, projectDetailSchema);
   return applyFeedbackPolicy(project);
 }
@@ -141,14 +130,6 @@ export async function getProjectDetail(
 export async function markProjectInterest(
   projectId: string,
 ): Promise<IeumProjectInterest> {
-  if (isLocalDesignProjectId(projectId)) {
-    return {
-      projectId,
-      interestCount: 0,
-      alreadyInterested: true,
-    };
-  }
-
   return requestData(`/projects/${projectId}/interests`, projectInterestSchema, {
     method: 'POST',
   });

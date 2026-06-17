@@ -5,10 +5,6 @@ const FEEDBACK_DISABLED_BOOTH_SLOTS = new Set([
   'D5',
   'D6',
   'E2',
-  'B-3',
-  'D-4',
-  'F-1',
-  'F-3',
 ]);
 
 export function isFeedbackDisabledBoothSlot(
