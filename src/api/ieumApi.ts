@@ -3,6 +3,7 @@ import { requestData } from './apiRequest';
 import { isFeedbackDisabledBoothSlot } from './feedbackAvailability';
 import {
   getLocalDesignProject,
+  isLocalDesignProjectId,
   withLocalDesignProjects,
 } from './localDesignProjects';
 import {
@@ -140,6 +141,14 @@ export async function getProjectDetail(
 export async function markProjectInterest(
   projectId: string,
 ): Promise<IeumProjectInterest> {
+  if (isLocalDesignProjectId(projectId)) {
+    return {
+      projectId,
+      interestCount: 0,
+      alreadyInterested: true,
+    };
+  }
+
   return requestData(`/projects/${projectId}/interests`, projectInterestSchema, {
     method: 'POST',
   });

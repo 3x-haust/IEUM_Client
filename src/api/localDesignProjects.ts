@@ -79,6 +79,10 @@ export function getLocalDesignProject(projectId: string): IeumProjectDetail | nu
   return LOCAL_DESIGN_PROJECTS.find((project) => project.id === projectId) ?? null;
 }
 
+export function isLocalDesignProjectId(projectId: string): boolean {
+  return LOCAL_DESIGN_PROJECTS.some((project) => project.id === projectId);
+}
+
 export function findLocalDesignProjectByBooth(
   boothSlot: string | null | undefined,
   serviceName: string,

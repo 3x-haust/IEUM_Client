@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { findLocalDesignProjectByBooth } from '../src/api/localDesignProjects.ts';
+import {
+  findLocalDesignProjectByBooth,
+  isLocalDesignProjectId,
+} from '../src/api/localDesignProjects.ts';
 import { BOOTHS } from '../src/data/booths.ts';
 
 test('Given design booths When resolving local projects Then every design booth is available', () => {
@@ -55,4 +58,12 @@ test('Given design booths When resolving local projects Then every design booth 
     assert.equal(project.boothSlot, slot);
     assert.equal(project.serviceName, serviceName);
   }
+});
+
+test('Given local design project When checking interest routing Then it is handled locally', () => {
+  const project = findLocalDesignProjectByBooth('E-1', '십만원권');
+  assert.ok(project, 'E-1 local design project should exist');
+
+  assert.equal(isLocalDesignProjectId(project.id), true);
+  assert.equal(isLocalDesignProjectId('server-project-e1'), false);
 });
