@@ -78,27 +78,46 @@ function MemberProjectsPage({
         ) : (
           <S.Grid>
             {visibleProjects.map((project) => (
-              <S.ProjectCard
+              <ProjectCard
                 key={project.id}
-                type="button"
-                onClick={() => onPickProject(project)}
-              >
-                <S.Thumbnail
-                  src={toOptimizedImagePath(
-                    project.thumbnailUrl ?? project.thumbnailPath,
-                  )}
-                  alt={`${project.serviceName} 미리보기`}
-                  loading="lazy"
-                />
-                <S.ProjectLabel>
-                  {projectLabel(project)}
-                </S.ProjectLabel>
-              </S.ProjectCard>
+                project={project}
+                onPickProject={onPickProject}
+              />
             ))}
           </S.Grid>
         )
       ) : null}
     </S.Page>
+  );
+}
+
+function ProjectCard({
+  project,
+  onPickProject,
+}: {
+  readonly project: IeumProjectSummary;
+  readonly onPickProject: (project: IeumProjectSummary) => void;
+}) {
+  const thumbnail = toOptimizedImagePath(
+    project.thumbnailUrl ?? project.thumbnailPath,
+  );
+
+  return (
+    <S.ProjectCard
+      type="button"
+      onClick={() => onPickProject(project)}
+    >
+      {thumbnail ? (
+        <S.Thumbnail
+          src={thumbnail}
+          alt={`${project.serviceName} 미리보기`}
+          loading="lazy"
+        />
+      ) : null}
+      <S.ProjectLabel>
+        {projectLabel(project)}
+      </S.ProjectLabel>
+    </S.ProjectCard>
   );
 }
 

@@ -39,9 +39,11 @@ function CategoryListSection({
                 type="button"
                 onClick={() => onPickProject(project)}
               >
-                <S.Thumbnail>
-                  <img src={project.thumbnail} alt={project.name} />
-                </S.Thumbnail>
+                {project.thumbnail ? (
+                  <S.Thumbnail>
+                    <img src={project.thumbnail} alt={project.name} />
+                  </S.Thumbnail>
+                ) : null}
                 <S.CardInfo>
                   {project.boothSlot ? (
                     <S.BoothCode>{project.boothSlot}</S.BoothCode>

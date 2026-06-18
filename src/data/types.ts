@@ -42,7 +42,7 @@ export interface ExperienceCategory {
 export interface ProjectListItem {
   id: string;
   name: string;
-  thumbnail: string;
+  thumbnail: string | null;
   group: 'SW' | 'DE';
   boothSlot?: string;
 }
