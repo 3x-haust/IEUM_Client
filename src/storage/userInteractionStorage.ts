@@ -131,6 +131,13 @@ export function markProjectActionSubmitted(
   writeFlag(projectSubmissionKey(kind, projectId), true);
 }
 
+export function clearProjectActionSubmitted(
+  kind: SubmissionKind,
+  projectId: string,
+): void {
+  writeFlag(projectSubmissionKey(kind, projectId), false);
+}
+
 export function hasSubmittedMemberContact(
   projectId: string,
   memberId: string,

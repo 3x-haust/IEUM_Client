@@ -4,7 +4,7 @@ import * as S from './FeedbackPage.styled';
 
 interface FeedbackPageProps {
   onBack: () => void;
-  onSubmit: (message: string) => void;
+  onSubmit: (message: string) => Promise<void> | void;
 }
 
 function FeedbackPage({ onBack, onSubmit }: FeedbackPageProps) {

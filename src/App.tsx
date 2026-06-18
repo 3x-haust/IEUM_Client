@@ -35,6 +35,7 @@ import {
   hasRecruiterPurpose,
   hasSubmittedMemberContact,
   hasSubmittedProjectAction,
+  clearProjectActionSubmitted,
   markMapTutorialDismissed,
   markMemberContactSubmitted,
   markOnboardingGuideDismissed,
@@ -299,29 +300,33 @@ function MainAppFlow() {
 
   const handleFeedbackSubmit = useCallback(
     async (message: string) => {
-      if (!selectedProjectId || selectedProject?.acceptsFeedback === false) return;
-      if (hasSubmittedProjectAction('feedback', selectedProjectId)) {
+      const projectId = selectedProjectId;
+      if (!projectId || selectedProject?.acceptsFeedback === false) return;
+      if (hasSubmittedProjectAction('feedback', projectId)) {
         setToast('이미 피드백을 남겼습니다');
         setServiceVisited(true);
         goToServiceIntro();
         return;
       }
+      markProjectActionSubmitted('feedback', projectId);
+      setToast('소중한 의견 감사합니다');
+      setServiceVisited(true);
+      goToServiceIntro();
       try {
-        const feedback = await createFeedback(selectedProjectId, message);
+        const feedback = await createFeedback(projectId, message);
         if (feedback.status === 'blocked') {
+          clearProjectActionSubmitted('feedback', projectId);
           setToast('부적절한 표현이 포함되어 있어요. 다시 작성해주세요');
           setServiceVisited(true);
           setPage('feedback');
           return;
         }
-        markProjectActionSubmitted('feedback', selectedProjectId);
-        setToast('소중한 의견 감사합니다');
       } catch (error) {
         if (!(error instanceof Error)) throw error;
+        clearProjectActionSubmitted('feedback', projectId);
         setToast('피드백 전송에 실패했습니다');
+        setPage('feedback');
       }
-      setServiceVisited(true);
-      goToServiceIntro();
     },
     [
       goToServiceIntro,
