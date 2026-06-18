@@ -1,8 +1,12 @@
 const GUIDE_DISMISSED_KEY = 'ieum.onboardingGuide.dismissed';
 const INITIAL_ONBOARDING_COMPLETED_KEY = 'ieum.initialOnboarding.completed';
+const INITIAL_ONBOARDING_AGE_GROUP_KEY = 'ieum.initialOnboarding.ageGroup';
+const INITIAL_ONBOARDING_GENDER_KEY = 'ieum.initialOnboarding.gender';
 const INITIAL_ONBOARDING_PURPOSE_KEY = 'ieum.initialOnboarding.purpose';
 const MAP_TUTORIAL_DISMISSED_KEY = 'ieum.mapTutorial.dismissed';
 
+export type VisitorAgeGroup = 'child' | 'youth' | 'adult' | 'senior';
+export type VisitorGender = 'male' | 'female' | 'other';
 export type VisitorPurpose = 'employment' | 'viewing';
 type SubmissionKind = 'feedback' | 'contact';
 
@@ -70,24 +74,52 @@ export function markInitialOnboardingCompleted(): void {
   writeFlag(INITIAL_ONBOARDING_COMPLETED_KEY, true);
 }
 
+export function saveVisitorAgeGroup(ageGroup: VisitorAgeGroup): void {
+  writeStoredValue(INITIAL_ONBOARDING_AGE_GROUP_KEY, ageGroup);
+}
+
+export function loadVisitorAgeGroup(): VisitorAgeGroup | null {
+  const value = readStoredValue(INITIAL_ONBOARDING_AGE_GROUP_KEY);
+  if (value === 'child' || value === 'youth' || value === 'adult' || value === 'senior') return value;
+  return null;
+}
+
+export function saveVisitorGender(gender: VisitorGender): void {
+  writeStoredValue(INITIAL_ONBOARDING_GENDER_KEY, gender);
+}
+
+export function loadVisitorGender(): VisitorGender | null {
+  const value = readStoredValue(INITIAL_ONBOARDING_GENDER_KEY);
+  if (value === 'male' || value === 'female' || value === 'other') return value;
+  return null;
+}
+
 export function saveVisitorPurpose(purpose: VisitorPurpose): void {
+  writeStoredValue(INITIAL_ONBOARDING_PURPOSE_KEY, purpose);
+}
+
+export function loadVisitorPurpose(): VisitorPurpose | null {
+  const value = readStoredValue(INITIAL_ONBOARDING_PURPOSE_KEY);
+  if (value === 'employment' || value === 'viewing') return value;
+  return null;
+}
+
+function writeStoredValue(key: string, value: string): void {
   const store = storage();
   if (!store) return;
   try {
-    store.setItem(INITIAL_ONBOARDING_PURPOSE_KEY, purpose);
+    store.setItem(key, value);
   } catch (error) {
     if (error instanceof Error) return;
     throw error;
   }
 }
 
-export function loadVisitorPurpose(): VisitorPurpose | null {
+function readStoredValue(key: string): string | null {
   const store = storage();
   if (!store) return null;
   try {
-    const value = store.getItem(INITIAL_ONBOARDING_PURPOSE_KEY);
-    if (value === 'employment' || value === 'viewing') return value;
-    return null;
+    return store.getItem(key);
   } catch (error) {
     if (error instanceof Error) return null;
     throw error;

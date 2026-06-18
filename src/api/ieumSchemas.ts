@@ -50,6 +50,8 @@ export const projectListSchema = z.object({
 
 export const visitorProfileSchema = z.object({
   id: z.string(),
+  ageGroup: z.string().optional(),
+  visitorType: z.enum(['general', 'recruiter']).optional(),
   businessCardFileId: z.string().nullable().optional(),
   businessCardBackFileId: z.string().nullable().optional(),
   businessCardRegistered: z.boolean().optional(),
@@ -68,6 +70,10 @@ export const contactSchema = z.object({
 export const feedbackSchema = z.object({
   id: z.string(),
   status: z.enum(['public', 'blocked', 'deleted']),
+  visitorProfileId: z.string().nullable().optional(),
+  ageGroup: z.string().nullable().optional(),
+  visitorType: z.string().nullable().optional(),
+  gender: z.string().nullable().optional(),
   moderationReason: z.string().nullable().optional(),
 });
 

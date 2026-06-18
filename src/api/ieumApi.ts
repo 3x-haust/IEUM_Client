@@ -37,6 +37,13 @@ const OCR_POLL_INTERVAL_MS = 1_000;
 const OCR_POLL_TIMEOUT_MS = 30_000;
 const projectListCache = new Map<string, ProjectListCacheEntry>();
 
+export type FeedbackVisitorMetadata = {
+  readonly visitorProfileId?: string | null;
+  readonly ageGroup?: string | null;
+  readonly visitorType?: 'general' | 'recruiter' | null;
+  readonly gender?: string | null;
+};
+
 export async function listProjectsByCategory(
   category: string,
 ): Promise<IeumProjectSummary[]> {
@@ -138,11 +145,21 @@ export async function markProjectInterest(
 export async function createFeedback(
   projectId: string,
   content: string,
+  metadata: FeedbackVisitorMetadata = {},
 ): Promise<IeumFeedback> {
   return requestData(`/projects/${projectId}/feedback`, feedbackSchema, {
     method: 'POST',
-    body: JSON.stringify({ content }),
+    body: JSON.stringify({
+      content,
+      ...compactFeedbackMetadata(metadata),
+    }),
   });
+}
+
+function compactFeedbackMetadata(metadata: FeedbackVisitorMetadata): FeedbackVisitorMetadata {
+  return Object.fromEntries(
+    Object.entries(metadata).filter(([, value]) => typeof value === 'string' && value.length > 0),
+  ) as FeedbackVisitorMetadata;
 }
 
 export async function createRecruiterContact(

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'; // 💡 useEffect 추가
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { saveVisitorAgeGroup, type VisitorAgeGroup } from '@/storage/userInteractionStorage';
 import { withSurveyReturnTo } from '@/utils/surveyReturn';
 
 // --- 데이터 정의 ---
 interface AgeOption {
-  id: string;
+  id: VisitorAgeGroup;
   title: string;
   range: string;
 }
@@ -147,7 +148,7 @@ const NextButton = styled.button<{ $isActive: boolean }>`
 // --- 컴포넌트 ---
 const Age: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<VisitorAgeGroup | null>(null);
   
   // 💡 프로그레스 바의 너비를 제어할 상태 추가 (처음엔 0)
   const [progressWidth, setProgressWidth] = useState(0);
@@ -194,7 +195,11 @@ const Age: React.FC = () => {
         <NextButton 
           $isActive={selectedId !== null}
           disabled={selectedId === null}
-          onClick={() => navigate(withSurveyReturnTo('/survey/gender'))} 
+          onClick={() => {
+            if (!selectedId) return;
+            saveVisitorAgeGroup(selectedId);
+            navigate(withSurveyReturnTo('/survey/gender'));
+          }}
         >
           다음
         </NextButton>

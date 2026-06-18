@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react'; // 💡 useEffect 추가
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { saveVisitorGender, type VisitorGender } from '@/storage/userInteractionStorage';
 import { withSurveyReturnTo } from '@/utils/surveyReturn';
 
 // --- 데이터 정의 ---
-interface AgeOption {
-  id: string;
+interface GenderOption {
+  id: VisitorGender;
   title: string;
 }
 
-const AGE_OPTIONS: AgeOption[] = [
+const GENDER_OPTIONS: GenderOption[] = [
   { id: 'male', title: '남성'},
   { id: 'female', title: '여성'},
 ];
@@ -135,7 +136,7 @@ const NextButton = styled.button<{ $isActive: boolean }>`
 // --- 컴포넌트 ---
 const Gender: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<VisitorGender | null>(null);
 
   // 💡 1단계 위치인 33.3%에서 시작하도록 초기값 설정
   const [progressWidth, setProgressWidth] = useState(33.3);
@@ -166,7 +167,7 @@ const Gender: React.FC = () => {
         <Title>성별을 선택해주세요</Title>
 
         <OptionsContainer>
-          {AGE_OPTIONS.map((option) => (
+          {GENDER_OPTIONS.map((option) => (
             <CardBox
               key={option.id}
               $isSelected={selectedId === option.id}
@@ -180,7 +181,11 @@ const Gender: React.FC = () => {
         <NextButton 
           $isActive={selectedId !== null}
           disabled={selectedId === null}
-          onClick={() => navigate(withSurveyReturnTo('/survey/purpose'))} 
+          onClick={() => {
+            if (!selectedId) return;
+            saveVisitorGender(selectedId);
+            navigate(withSurveyReturnTo('/survey/purpose'));
+          }}
         >
           다음
         </NextButton>

@@ -36,6 +36,9 @@ import {
   hasSubmittedMemberContact,
   hasSubmittedProjectAction,
   clearProjectActionSubmitted,
+  loadVisitorAgeGroup,
+  loadVisitorGender,
+  loadVisitorPurpose,
   markMapTutorialDismissed,
   markMemberContactSubmitted,
   markOnboardingGuideDismissed,
@@ -313,7 +316,14 @@ function MainAppFlow() {
       setServiceVisited(true);
       goToServiceIntro();
       try {
-        const feedback = await createFeedback(projectId, message);
+        const savedBusinessCard = loadSavedBusinessCard();
+        const purpose = loadVisitorPurpose();
+        const feedback = await createFeedback(projectId, message, {
+          visitorProfileId: savedBusinessCard?.visitorProfileId ?? null,
+          ageGroup: loadVisitorAgeGroup(),
+          visitorType: purpose === 'employment' ? 'recruiter' : purpose === 'viewing' ? 'general' : null,
+          gender: loadVisitorGender(),
+        });
         if (feedback.status === 'blocked') {
           clearProjectActionSubmitted('feedback', projectId);
           setToast('부적절한 표현이 포함되어 있어요. 다시 작성해주세요');
