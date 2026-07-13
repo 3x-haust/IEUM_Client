@@ -2,6 +2,12 @@ FROM node:22-alpine AS build
 
 WORKDIR /app
 
+ARG VITE_IEUM_API_BASE_URL
+ARG VITE_SOCKET_URL
+
+ENV VITE_IEUM_API_BASE_URL=$VITE_IEUM_API_BASE_URL
+ENV VITE_SOCKET_URL=$VITE_SOCKET_URL
+
 COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && corepack prepare pnpm@10.15.1 --activate && pnpm install --frozen-lockfile
 
