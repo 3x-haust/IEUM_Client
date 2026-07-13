@@ -20,7 +20,6 @@ import { extname, join, normalize } from 'node:path';
 import { createServer } from 'node:http';
 
 const root = join(process.cwd(), 'dist');
-const port = Number(process.env.PORT ?? 3000);
 const types = {
   '.css': 'text/css; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
@@ -45,7 +44,7 @@ createServer(async (request, response) => {
   const filePath = await resolveFile(request.url ?? '/');
   response.setHeader('Content-Type', types[extname(filePath)] ?? 'application/octet-stream');
   createReadStream(filePath).pipe(response);
-}).listen(port, '0.0.0.0');
+}).listen(3000, '0.0.0.0');
 EOF
 
 EXPOSE 3000
